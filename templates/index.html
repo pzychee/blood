@@ -4,19 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BloodConnect - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Global styles */
+        /* Modern UI styles */
+        :root {
+            --primary: #e53935;
+            --primary-dark: #c62828;
+            --primary-light: #ffcdd2;
+            --secondary: #2196f3;
+            --secondary-dark: #1976d2;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --background: #f5f5f5;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: #f4f6f8;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
         }
 
         /* Container styles */
         .main-container {
-            min-height: 90vh;
-            padding: 1rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header with logo */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 0.75rem;
         }
 
         /* Role selection grid */
@@ -24,156 +64,273 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 90vh;
+            flex-grow: 1;
+            padding: 1rem 0;
         }
 
         .dashboard-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .dashboard-title {
-            font-size: 2rem;
-            color: #2c3e50;
+            font-size: 2.25rem;
+            color: var(--primary);
             margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .dashboard-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr;
             gap: 1.5rem;
-            max-width: 1200px;
+            width: 100%;
+            max-width: 900px;
             margin: 0 auto;
         }
 
         .card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--primary);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
         }
 
         .card-title {
             font-size: 1.5rem;
-            color: #2c3e50;
+            color: var(--text-primary);
             margin-bottom: 1rem;
+            font-weight: 600;
         }
 
-        /* Login form styles */
+        .card-text {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .card-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Auth container styles */
         .auth-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 90vh;
-            padding: 1rem;
+            flex-grow: 1;
+            padding: 1rem 0;
         }
 
         .auth-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            max-width: 400px;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
             width: 100%;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--primary);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .auth-back {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-back:hover {
+            color: var(--primary);
         }
 
         .auth-title {
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             font-size: 1.8rem;
-            color: #2c3e50;
+            color: var(--primary);
+            font-weight: 600;
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #34495e;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
         .form-input {
             width: 100%;
-            padding: 0.6rem 1rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            padding: 1rem;
+            padding-left: 3rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
             font-size: 1rem;
-            transition: border 0.3s ease;
+            transition: var(--transition);
+            box-sizing: border-box;
+            color: var(--text-primary);
         }
 
         .form-input:focus {
-            border-color: #007bff;
+            border-color: var(--primary);
             outline: none;
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 2.75rem;
+            left: 1rem;
+            color: var(--text-secondary);
         }
 
         .btn {
-            padding: 0.6rem 1.2rem;
+            padding: 1rem;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: var(--transition);
             text-align: center;
             text-decoration: none;
             display: inline-block;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary {
-            background-color: #007bff;
+            background-color: var(--primary);
             color: white;
         }
 
         .btn-primary:hover {
-            background-color: #0056b3;
+            background-color: var(--primary-dark);
         }
 
         .btn-secondary {
-            background-color: #6c757d;
+            background-color: var(--secondary);
             color: white;
-            margin-right: 0.5rem;
         }
 
         .btn-secondary:hover {
-            background-color: #5a6268;
+            background-color: var(--secondary-dark);
         }
 
         .full-width {
             width: 100%;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
         }
 
         .auth-links {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 1rem;
         }
 
         .auth-links a {
             text-decoration: none;
-            color: #007bff;
-            font-size: 0.95rem;
-            transition: color 0.3s ease;
+            color: var(--secondary);
+            font-size: 1rem;
+            transition: var(--transition);
         }
 
         .auth-links a:hover {
-            color: #0056b3;
+            color: var(--secondary-dark);
+            text-decoration: underline;
         }
 
-        .button-group {
+        /* Divider */
+        .divider {
             display: flex;
-            margin-top: 1rem;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--text-secondary);
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .divider::before {
+            margin-right: 1rem;
+        }
+
+        .divider::after {
+            margin-left: 1rem;
         }
 
         /* Hidden by default */
@@ -183,39 +340,77 @@
         
         /* Flash messages */
         .flash-message {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
             background-color: #f8d7da;
             color: #721c24;
-            border: 1px solid #f5c6cb;
+            border-left: 4px solid #f5c6cb;
+            display: flex;
+            align-items: center;
+        }
+        
+        .flash-message i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+        
+        /* Media queries for larger screens */
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+            
+            .dashboard-title {
+                font-size: 2.5rem;
+            }
+            
+            .auth-card {
+                padding: 3rem;
+            }
+            
+            .auth-title {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="main-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="logo">
+                <i class="fas fa-tint"></i>
+                <span>BloodConnect</span>
+            </div>
+        </div>
+
         <!-- Role Selection View -->
         <div id="roleSelection" class="role-selection">
             <div>
                 <div class="dashboard-header">
                     <h1 class="dashboard-title">Welcome to BloodConnect</h1>
-                    <p>Connecting blood donors with those in need</p>
+                    <p class="dashboard-subtitle">Join our community and make a difference. Whether you're donating or requesting blood, we connect you with the right people when it matters most.</p>
                 </div>
 
                 <div class="grid">
                     <div class="card" onclick="showLogin('donor')">
-                        <h2 class="card-title">For Donors</h2>
-                        <p>Join our community of life-savers. Register as a donor and help save lives in your area.</p>
+                        <div class="card-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <h2 class="card-title">Become a Donor</h2>
+                        <p class="card-text">Join our community of life-savers. Register as a donor and help save lives in your area with your blood donation.</p>
+                        <button class="card-btn">Join as Donor</button>
                     </div>
 
                     <div class="card" onclick="showLogin('recipient')">
-                        <h2 class="card-title">For Recipients</h2>
-                        <p>Need blood? Create a request and get connected with nearby donors quickly.</p>
-                    </div>
-
-                    <div class="card" onclick="showLogin('admin')">
-                        <h2 class="card-title">For Blood Banks</h2>
-                        <p>Manage your blood bank inventory and connect with donors and recipients efficiently.</p>
+                        <div class="card-icon">
+                            <i class="fas fa-procedures"></i>
+                        </div>
+                        <h2 class="card-title">Need Blood?</h2>
+                        <p class="card-text">Create a request and get connected with nearby donors quickly. Our network ensures you get the help you need, when you need it.</p>
+                        <button class="card-btn">Request Blood</button>
                     </div>
                 </div>
             </div>
@@ -224,6 +419,7 @@
         <!-- Unified Login View -->
         <div id="loginView" class="auth-container hidden">
             <div class="auth-card">
+                <i class="fas fa-arrow-left auth-back" onclick="showRoleSelection()"></i>
                 <h2 id="loginTitle" class="auth-title">Login</h2>
                 
                 <!-- Flash messages container -->
@@ -234,21 +430,28 @@
                     
                     <div class="form-group">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" id="email" name="email" class="form-input" required>
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required>
                     </div>
 
                     <div class="form-group">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" name="password" class="form-input" required>
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary full-width">Login</button>
                 </form>
 
+                <div class="divider">OR</div>
+
                 <div class="auth-links">
-                    <a href="#" id="registerLink" onclick="showRegister()">New User? Register here</a>
-                    <a href="/forgot_password">Forgot Password?</a>
-                    <a href="#" onclick="showRoleSelection()">Go back to role selection</a>
+                    <a href="#" id="registerLink" onclick="showRegister()">
+                        <i class="fas fa-user-plus"></i> New User? Register here
+                    </a>
+                    <a href="/forgot_password">
+                        <i class="fas fa-key"></i> Forgot Password?
+                    </a>
                 </div>
             </div>
         </div>
@@ -256,6 +459,7 @@
         <!-- Registration View -->
         <div id="registerView" class="auth-container hidden">
             <div class="auth-card">
+                <i class="fas fa-arrow-left auth-back" onclick="showLogin()"></i>
                 <h2 id="registerTitle" class="auth-title">Register</h2>
                 
                 <!-- Flash messages container -->
@@ -266,21 +470,25 @@
                     
                     <div class="form-group">
                         <label for="name" class="form-label">Full Name</label>
-                        <input type="text" id="name" name="name" class="form-input" required>
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="name" name="name" class="form-input" placeholder="Enter your full name" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" id="registerEmail" name="email" class="form-input" required>
+                        <label for="registerEmail" class="form-label">Email</label>
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="registerEmail" name="email" class="form-input" placeholder="Enter your email" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" id="registerPassword" name="password" class="form-input" required>
+                        <label for="registerPassword" class="form-label">Password</label>
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="registerPassword" name="password" class="form-input" placeholder="Create a password" required>
                     </div>
 
                     <div class="form-group">
                         <label for="blood_type" class="form-label">Blood Type</label>
+                        <i class="fas fa-tint input-icon"></i>
                         <select id="blood_type" name="blood_type" class="form-input" required>
                             <option value="">Select Blood Type</option>
                             <option value="A+">A+</option>
@@ -297,9 +505,12 @@
                     <button type="submit" class="btn btn-primary full-width">Register</button>
                 </form>
 
+                <div class="divider">OR</div>
+
                 <div class="auth-links">
-                    <a href="#" id="loginLink" onclick="showLogin()">Already have an account? Login</a>
-                    <a href="#" onclick="showRoleSelection()">Go back to role selection</a>
+                    <a href="#" id="loginLink" onclick="showLogin()">
+                        <i class="fas fa-sign-in-alt"></i> Already have an account? Login
+                    </a>
                 </div>
             </div>
         </div>
@@ -324,8 +535,17 @@
                 
                 // Update the login title based on role
                 const loginTitle = document.getElementById('loginTitle');
-                const roleName = role.charAt(0).toUpperCase() + role.slice(1);
-                loginTitle.textContent = roleName + ' Login';
+                let titleText = '';
+                
+                if (role === 'donor') {
+                    titleText = 'Donor Login';
+                } else if (role === 'recipient') {
+                    titleText = 'Recipient Login';
+                } else {
+                    titleText = 'Login';
+                }
+                
+                loginTitle.textContent = titleText;
             }
             
             document.getElementById('roleSelection').classList.add('hidden');
@@ -339,8 +559,17 @@
             
             // Update register title
             const registerTitle = document.getElementById('registerTitle');
-            const roleName = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
-            registerTitle.textContent = 'Register as ' + roleName;
+            let titleText = '';
+            
+            if (currentRole === 'donor') {
+                titleText = 'Register as Donor';
+            } else if (currentRole === 'recipient') {
+                titleText = 'Register as Recipient';
+            } else {
+                titleText = 'Register';
+            }
+            
+            registerTitle.textContent = titleText;
             
             document.getElementById('roleSelection').classList.add('hidden');
             document.getElementById('loginView').classList.add('hidden');
@@ -351,7 +580,14 @@
         function showFlashMessage(message, container) {
             const flashDiv = document.createElement('div');
             flashDiv.className = 'flash-message';
-            flashDiv.textContent = message;
+            
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-exclamation-circle';
+            flashDiv.appendChild(icon);
+            
+            const textNode = document.createTextNode(message);
+            flashDiv.appendChild(textNode);
+            
             document.getElementById(container).appendChild(flashDiv);
             
             // Auto-remove after 5 seconds

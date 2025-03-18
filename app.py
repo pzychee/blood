@@ -44,6 +44,7 @@ class BloodRequest(db.Model):
     status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='blood_requests')
 
 class BloodBank(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,12 +56,14 @@ class BloodBank(db.Model):
 
 class Donation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    donor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    donor_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_donation_donor_id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_donation_recipient_id'), nullable=True)
     blood_type = db.Column(db.String(5), nullable=False)
     units = db.Column(db.Integer, nullable=False)
     donation_date = db.Column(db.DateTime, default=datetime.utcnow)
 
-    donor = db.relationship('User', backref='donations')
+    donor = db.relationship('User', foreign_keys=[donor_id], backref='donations')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_donations')
 
 
 with app.app_context():
@@ -194,7 +197,16 @@ def respond_to_request(request_id):
     request = BloodRequest.query.get_or_404(request_id)
     if request.status == 'pending':
         request.status = 'responded'
-        request.donor_email = current_user.email  # Capture the donor's email
+        request.donor_email = current_user.email
+        
+        # Create a new donation record
+        donation = Donation(
+            donor_id=current_user.id,
+            recipient_id=request.recipient_id,
+            blood_type=request.blood_type,
+            units=request.units_needed
+        )
+        db.session.add(donation)
         db.session.commit()
         return jsonify({'success': True})
     else:
@@ -274,6 +286,54 @@ def update_bank_stock(bank_id):
         return redirect(url_for('dashboard'))
 
     return render_template('update_bank_stock.html', blood_bank=blood_bank)
+
+@app.route('/get_latest_donation')
+@login_required
+def get_latest_donation():
+    last_donation = Donation.query.filter_by(donor_id=current_user.id).order_by(Donation.donation_date.desc()).first()
+    if last_donation:
+        return jsonify({
+            'date': last_donation.donation_date.strftime('%Y-%m-%d'),
+            'recipient_name': last_donation.recipient.name if last_donation.recipient else None,
+            'recipient_email': last_donation.recipient.email if last_donation.recipient else None,
+            'units': last_donation.units
+        })
+    return jsonify({'message': 'No donations yet'})
+
+@app.route('/update_recipient_status/<int:recipient_id>', methods=['POST'])
+@login_required
+def update_recipient_status(recipient_id):
+    recipient = User.query.get_or_404(recipient_id)
+    if recipient.role != 'recipient':
+        return jsonify({'success': False, 'message': 'User is not a recipient'}), 400
+    
+    data = request.get_json()
+    status = data.get('status')
+    if status not in ['pending', 'responded']:
+        return jsonify({'success': False, 'message': 'Invalid status'}), 400
+    
+    recipient.last_donation = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/recipient_requests', methods=['GET'])
+@login_required
+def get_recipient_requests():
+    if current_user.role != 'recipient':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    requests = BloodRequest.query.filter_by(recipient_id=current_user.id).all()
+    return jsonify({
+        'requests': [{
+            'id': req.id,
+            'blood_type': req.blood_type,
+            'units_needed': req.units_needed,
+            'urgency': req.urgency,
+            'status': req.status,
+            'donor_email': req.donor_email,
+            'created_at': req.created_at.strftime('%Y-%m-%d %H:%M')
+        } for req in requests]
+    })
 
 @app.route('/logout')
 @login_required

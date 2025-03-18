@@ -2,33 +2,38 @@
 
 {% block content %}
 <nav class="navbar">
-    <a href="{{ url_for('index') }}" class="nav-logo">BloodConnect</a>
     <div class="navbar-brand">
-        <button class="hamburger" onclick="toggleMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <a href="{{ url_for('index') }}" class="nav-logo">BloodConnect</a>
     </div>
-    <div class="nav-menu" id="navMenu">
-        <a href="{{ url_for('dashboard') }}" class="nav-item">Dashboard</a>
-        <a href="{{ url_for('create_request') }}" class="nav-item">New Request</a>
-        <a href="{{ url_for('logout') }}" class="nav-item">Logout</a>
+    <div class="nav-menu">
+        <a href="{{ url_for('logout') }}" class="nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
     </div>
 </nav>
 
 <div class="dashboard">
-    <div class="dashboard-header">
-        <h1 class="dashboard-title">Recipient Dashboard</h1>
-        <p>Welcome back, {{ current_user.name }}</p>
-    </div>
-
     <div class="grid">
-        <!-- Active Requests -->
+        <!-- Profile and Dashboard Header -->
         <div class="card">
-            <h2 class="card-title">Your Blood Requests</h2>
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Recipient Dashboard</h1>
+                <p>Welcome back, {{ current_user.name }}</p>
+            </div>
+            
+            <h2 class="card-title">Your Profile</h2>
+            <div class="detail-item">
+                <span class="detail-label">Blood Type</span>
+                <span class="detail-value">{{ current_user.blood_type }}</span>
+            </div>
             <a href="{{ url_for('create_request') }}" class="btn btn-primary">Create New Request</a>
+        </div>
 
+        <!-- Active Requests -->
+        <div class="card" id="active-requests-section">
+            <h2 class="card-title">Your Blood Requests</h2>
+            
             {% set active_requests = requests | selectattr("status", "in", ["pending", "in_progress"]) | list %}
             {% if active_requests %}
                 {% for request in active_requests %}
@@ -36,9 +41,6 @@
                         <div class="request-header">
                             <span class="request-type">{{ request.blood_type }}</span>
                             <span class="request-status status-{{ request.status }}">{{ request.status }}</span>
-                            <button class="delete-request btn btn-danger" data-request-id="{{ request.id }}">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
                         </div>
                         <div class="request-details">
                             <div class="detail-item">
@@ -51,9 +53,16 @@
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Created</span>
-                                <span class="detail-value">{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                <span class="detail-value">{{ request.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Donor</span>
+                                <span class="detail-value" data-field="donor_email">{{ request.donor_email or 'No donor yet' }}</span>
                             </div>
                         </div>
+                        <button class="delete-request btn btn-danger" data-request-id="{{ request.id }}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                     </div>
                 {% endfor %}
             {% else %}
@@ -64,52 +73,56 @@
         <!-- Donation History -->
         <div class="card">
             <h2 class="card-title">Donation History</h2>
-            {% set history_requests = requests | selectattr("status", "in", ["responded", "fulfilled"]) | list %}
-            {% if history_requests or donation_history %}
-                {% for donation in donation_history %}
-                    <div class="history-card">
-                        <div class="history-header">
-                            <span class="history-type">{{ donation.blood_type }}</span>
-                            <span class="history-date">{{ donation.donation_date.strftime('%Y-%m-%d') }}</span>
-                        </div>
-                        <div class="history-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Units Received</span>
-                                <span class="detail-value">{{ donation.units }}</span>
+            <div class="history-container">
+                {% set history_requests = requests | selectattr("status", "in", ["responded", "fulfilled"]) | list %}
+                {% if history_requests or donation_history %}
+                    {% for donation in donation_history | sort(attribute='donation_date', reverse=True) %}
+                        <div class="history-card">
+                            <div class="history-header">
+                                <span class="history-type">{{ donation.blood_type }}</span>
+                                <span class="history-date">{{ donation.donation_date.strftime('%Y-%m-%d') }}</span>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Donor</span>
-                                <span class="detail-value">{{ donation.donor_email }}</span>
+                            <div class="history-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Units Received</span>
+                                    <span class="detail-value">{{ donation.units }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Donor</span>
+                                    <span class="detail-value">{{ donation.donor_email }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
 
-                {% for request in history_requests %}
-                    <div class="history-card">
-                        <div class="history-header">
-                            <span class="history-type">{{ request.blood_type }}</span>
-                            <span class="history-date">{{ request.created_at.strftime('%Y-%m-%d') }}</span>
+                    {% for request in history_requests | sort(attribute='created_at', reverse=True) %}
+                        <div class="history-card">
+                            <div class="history-header">
+                                <span class="history-type">{{ request.blood_type }}</span>
+                                <span class="history-date">{{ request.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                            <div class="history-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Units Needed</span>
+                                    <span class="detail-value">{{ request.units_needed }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Urgency</span>
+                                    <span class="detail-value">{{ request.urgency }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Donor</span>
+                                    <span class="detail-value">{{ request.donor_email }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="history-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Units Needed</span>
-                                <span class="detail-value">{{ request.units_needed }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Urgency</span>
-                                <span class="detail-value">{{ request.urgency }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Donor</span>
-                                <span class="detail-value">{{ request.donor_email }}</span>
-                            </div>
-                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-history">
+                        <p>No donation history available.</p>
                     </div>
-                {% endfor %}
-            {% else %}
-                <p>No donation history available.</p>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
@@ -119,233 +132,528 @@
     <div class="modal-content">
         <span class="close">&times;</span>
         <p>Are you sure you want to delete this request?</p>
-        <button id="confirmDelete" class="btn btn-danger">Delete</button>
-        <button id="cancelDelete" class="btn btn-secondary">Cancel</button>
+        <div class="modal-buttons">
+            <button id="confirmDelete" class="btn btn-danger">Delete</button>
+            <button id="cancelDelete" class="btn btn-secondary">Cancel</button>
+        </div>
     </div>
 </div>
 
-<style>
-/* === Global Styles === */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-.dashboard {
-    padding: 1rem;
-}
-
-.grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 1rem;
-    flex: 1;
-    min-width: 300px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.card-title {
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-}
-
-/* === Navbar Styles === */
-.navbar {
-    background: #2c3e50;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-   
-    flex-wrap: wrap;
-}
-
-.nav-logo {
-    color: #fff;
-    font-weight: bold;
-    text-decoration: none;
-    font-size: 1.2rem;
-}
-
-.hamburger {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.hamburger span {
-    width: 25px;
-    height: 3px;
-    background: #fff;
-    margin: 4px 0;
-    display: block;
-}
-
-.nav-menu {
-    display: flex;
-    gap: 1rem;
-}
-
-.nav-item {
-    color: #fff;
-    text-decoration: none;
-}
-
-/* === Responsive === */
-@media (max-width: 768px) {
-    .hamburger {
-        display: block;
-    }
-
-    .nav-menu {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        background: #2c3e50;
-        padding: 1rem 0;
-    }
-
-    .nav-menu.active {
-        display: flex;
-    }
-
-    .grid {
-        flex-direction: column;
-    }
-}
-
-/* === Request Card === */
-.request-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f9fa;
-    padding: 0.5rem;
-    border-radius: 5px 5px 0 0;
-}
-
-.request-details, .history-details {
-    padding: 0.5rem 0;
-}
-
-.detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.3rem 0;
-}
-
-/* === Modal === */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 999;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-    background: white;
-    padding: 1rem;
-    margin: 20% auto;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-}
-
-.close {
-    float: right;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-/* === Buttons === */
-.btn {
-    padding: 0.5rem 1rem;
-    margin: 0.3rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.btn-primary {
-    background-color: #3498db;
-    color: white;
-}
-
-.btn-danger {
-    background-color: #e74c3c;
-    color: white;
-}
-
-.btn-secondary {
-    background-color: #95a5a6;
-    color: white;
-}
-
-.btn:hover {
-    opacity: 0.9;
-}
-</style>
-
 <script>
-function toggleMenu() {
-    const navMenu = document.getElementById('navMenu');
-    navMenu.classList.toggle('active');
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('deleteModal');
     const confirmBtn = document.getElementById('confirmDelete');
     const cancelBtn = document.getElementById('cancelDelete');
-    const closeBtn = document.getElementsByClassName('close')[0];
+    const closeBtn = document.querySelector('.close');
 
-    document.querySelectorAll('.delete-request').forEach(button => {
-        button.addEventListener('click', e => {
-            e.preventDefault();
-            const requestId = button.getAttribute('data-request-id');
-            modal.style.display = 'block';
-            confirmBtn.setAttribute('data-request-id', requestId);
+    // Function to fetch updated requests
+    async function fetchUpdatedRequests() {
+        try {
+            const response = await fetch('/api/recipient_requests');
+            const data = await response.json();
+            
+            // Get the active requests section
+            const activeRequestsSection = document.getElementById('active-requests-section');
+            if (!activeRequestsSection) return;
+
+            // Create a new fragment to hold the updated requests
+            const fragment = document.createDocumentFragment();
+
+            // Add the title
+            fragment.appendChild(createElement('h2', { class: 'card-title' }, 'Your Blood Requests'));
+
+            // Add requests
+            const activeRequests = data.requests.filter(req => req.status === 'pending' || req.status === 'in_progress');
+            if (activeRequests.length > 0) {
+                activeRequests.forEach(request => {
+                    const card = createElement('div', { class: 'request-card', id: `request-${request.id}` });
+                    
+                    // Header
+                    const header = createElement('div', { class: 'request-header' });
+                    header.appendChild(createElement('span', { class: 'request-type' }, request.blood_type));
+                    header.appendChild(createElement('span', { class: `request-status status-${request.status}` }, request.status));
+                    card.appendChild(header);
+
+                    // Details
+                    const details = createElement('div', { class: 'request-details' });
+                    details.appendChild(createDetailItem('Units Needed', request.units_needed));
+                    details.appendChild(createDetailItem('Urgency', request.urgency));
+                    details.appendChild(createDetailItem('Created', request.created_at));
+                    details.appendChild(createDetailItem('Donor', request.donor_email || 'No donor yet', 'donor_email'));
+                    card.appendChild(details);
+                    
+                    // Delete button
+                    const deleteBtn = createElement('button', { 
+                        class: 'delete-request btn btn-danger',
+                        'data-request-id': request.id
+                    });
+                    deleteBtn.innerHTML = `<i class="fas fa-trash"></i> Delete`;
+                    card.appendChild(deleteBtn);
+                    
+                    fragment.appendChild(card);
+                });
+            } else {
+                fragment.appendChild(createElement('p', {}, 'No active requests found.'));
+            }
+
+            // Replace the content
+            activeRequestsSection.innerHTML = '';
+            activeRequestsSection.appendChild(fragment);
+
+            // Reattach event listeners
+            attachDeleteButtonListeners();
+        } catch (error) {
+            console.error('Error fetching updates:', error);
+        }
+    }
+
+    // Check for updates every 2 seconds
+    setInterval(fetchUpdatedRequests, 2000);
+
+    // Helper functions
+    function createElement(tag, attrs = {}, text = '') {
+        const el = document.createElement(tag);
+        if (text) el.textContent = text;
+        Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+        return el;
+    }
+
+    function createDetailItem(label, value, field = '') {
+        const item = createElement('div', { class: 'detail-item' });
+        item.appendChild(createElement('span', { class: 'detail-label' }, label));
+        item.appendChild(createElement('span', { 
+            class: 'detail-value',
+            'data-field': field
+        }, value));
+        return item;
+    }
+
+    function attachDeleteButtonListeners() {
+        document.querySelectorAll('.delete-request').forEach(button => {
+            button.onclick = () => {
+                modal.style.display = 'block';
+                const requestId = button.dataset.requestId;
+                confirmBtn.onclick = () => {
+                    fetch(`/delete_request/${requestId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            modal.style.display = 'none';
+                            const card = document.getElementById(`request-${requestId}`);
+                            if (card) card.remove();
+                        }
+                    });
+                };
+            };
         });
+    }
+
+    // Existing delete functionality
+    const deleteButtons = document.querySelectorAll('.delete-request');
+    deleteButtons.forEach(button => {
+        button.onclick = () => {
+            modal.style.display = 'block';
+            const requestId = button.dataset.requestId;
+            confirmBtn.onclick = () => {
+                fetch(`/delete_request/${requestId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        modal.style.display = 'none';
+                        const card = document.getElementById(`request-${requestId}`);
+                        if (card) card.remove();
+                    }
+                });
+            };
+        };
     });
 
-    confirmBtn.onclick = () => {
-        const requestId = confirmBtn.getAttribute('data-request-id');
-        fetch(`/delete_request/${requestId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            credentials: 'same-origin'
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById(`request-${requestId}`).remove();
-                modal.style.display = 'none';
-                location.reload(true);
-            } else {
-                alert(data.message || "Failed to delete request.");
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("An error occurred while deleting.");
-        });
-    };
-
-    cancelBtn.onclick = closeBtn.onclick = () => modal.style.display = 'none';
+    cancelBtn.onclick = () => modal.style.display = 'none';
+    closeBtn.onclick = () => modal.style.display = 'none';
 
     window.onclick = e => {
         if (e.target === modal) modal.style.display = 'none';
     };
 });
 </script>
+
+<style>
+/* === Global Styles === */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+}
+
+.dashboard {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: 70px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-title {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* === Navbar Styles === */
+.navbar {
+    background: linear-gradient(135deg, #4361ee, #3f37c9);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.nav-logo {
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+}
+
+.nav-item {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item i {
+    font-size: 1.1rem;
+}
+
+/* === Dashboard Header === */
+.dashboard-header {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.dashboard-header p {
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* === History Section Styles === */
+.history-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.history-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.history-card:hover {
+    transform: translateY(-2px);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.history-type {
+    background: #e9ecef;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.history-date {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.history-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+}
+
+.detail-label {
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    font-weight: 500;
+}
+
+.no-history {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+/* === Scrollbar Styling === */
+.history-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.history-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.history-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.history-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* === Button Styles === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4361ee, #3f37c9);
+    color: white;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff4757, #ff5257);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === Request Card Styles === */
+.request-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.request-card:hover {
+    transform: translateY(-2px);
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.request-type {
+    background: #e9ecef;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.request-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.status-pending {
+    background: #ffe5e5;
+    color: #ff4757;
+}
+
+.status-in_progress {
+    background: #e8f0fe;
+    color: #2d99ff;
+}
+
+.status-responded {
+    background: #e8f0fe;
+    color: #2d99ff;
+}
+
+.status-fulfilled {
+    background: #e8f5e9;
+    color: #2ecc71;
+}
+
+.request-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+/* === Modal Styles === */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-buttons .btn {
+    flex: 1;
+}
+
+/* === Responsive === */
+@media (min-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-header {
+        margin-bottom: 1rem;
+    }
+
+    .dashboard-title {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .navbar {
+        padding: 1rem;
+    }
+    
+    .request-details {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 {% endblock %}
