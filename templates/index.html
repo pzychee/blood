@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodConnect - Login</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f6f8;
+        }
+
+        /* Container styles */
+        .main-container {
+            min-height: 90vh;
+            padding: 1rem;
+        }
+
+        /* Role selection grid */
+        .role-selection {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        /* Login form styles */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+            padding: 1rem;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            margin-right: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .full-width {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .auth-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .auth-links a {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .auth-links a:hover {
+            color: #0056b3;
+        }
+
+        .button-group {
+            display: flex;
+            margin-top: 1rem;
+        }
+
+        /* Hidden by default */
+        .hidden {
+            display: none;
+        }
+        
+        /* Flash messages */
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Role Selection View -->
+        <div id="roleSelection" class="role-selection">
+            <div>
+                <div class="dashboard-header">
+                    <h1 class="dashboard-title">Welcome to BloodConnect</h1>
+                    <p>Connecting blood donors with those in need</p>
+                </div>
+
+                <div class="grid">
+                    <div class="card" onclick="showLogin('donor')">
+                        <h2 class="card-title">For Donors</h2>
+                        <p>Join our community of life-savers. Register as a donor and help save lives in your area.</p>
+                    </div>
+
+                    <div class="card" onclick="showLogin('recipient')">
+                        <h2 class="card-title">For Recipients</h2>
+                        <p>Need blood? Create a request and get connected with nearby donors quickly.</p>
+                    </div>
+
+                    <div class="card" onclick="showLogin('admin')">
+                        <h2 class="card-title">For Blood Banks</h2>
+                        <p>Manage your blood bank inventory and connect with donors and recipients efficiently.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unified Login View -->
+        <div id="loginView" class="auth-container hidden">
+            <div class="auth-card">
+                <h2 id="loginTitle" class="auth-title">Login</h2>
+                
+                <!-- Flash messages container -->
+                <div id="flashMessages"></div>
+                
+                <form action="/login" method="POST" class="auth-form">
+                    <input type="hidden" id="roleInput" name="role" value="">
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary full-width">Login</button>
+                </form>
+
+                <div class="auth-links">
+                    <a href="#" id="registerLink" onclick="showRegister()">New User? Register here</a>
+                    <a href="/forgot_password">Forgot Password?</a>
+                    <a href="#" onclick="showRoleSelection()">Go back to role selection</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration View -->
+        <div id="registerView" class="auth-container hidden">
+            <div class="auth-card">
+                <h2 id="registerTitle" class="auth-title">Register</h2>
+                
+                <!-- Flash messages container -->
+                <div id="registerFlashMessages"></div>
+                
+                <form action="/register" method="POST" class="auth-form">
+                    <input type="hidden" id="registerRoleInput" name="role" value="">
+                    
+                    <div class="form-group">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" id="name" name="name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="registerEmail" name="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="registerPassword" name="password" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="blood_type" class="form-label">Blood Type</label>
+                        <select id="blood_type" name="blood_type" class="form-input" required>
+                            <option value="">Select Blood Type</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary full-width">Register</button>
+                </form>
+
+                <div class="auth-links">
+                    <a href="#" id="loginLink" onclick="showLogin()">Already have an account? Login</a>
+                    <a href="#" onclick="showRoleSelection()">Go back to role selection</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current user role
+        let currentRole = '';
+
+        // Function to show role selection
+        function showRoleSelection() {
+            document.getElementById('roleSelection').classList.remove('hidden');
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('registerView').classList.add('hidden');
+        }
+
+        // Function to show login for specific role
+        function showLogin(role) {
+            if (role) {
+                currentRole = role;
+                document.getElementById('roleInput').value = role;
+                
+                // Update the login title based on role
+                const loginTitle = document.getElementById('loginTitle');
+                const roleName = role.charAt(0).toUpperCase() + role.slice(1);
+                loginTitle.textContent = roleName + ' Login';
+            }
+            
+            document.getElementById('roleSelection').classList.add('hidden');
+            document.getElementById('registerView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+        }
+
+        // Function to show registration for specific role
+        function showRegister() {
+            document.getElementById('registerRoleInput').value = currentRole;
+            
+            // Update register title
+            const registerTitle = document.getElementById('registerTitle');
+            const roleName = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
+            registerTitle.textContent = 'Register as ' + roleName;
+            
+            document.getElementById('roleSelection').classList.add('hidden');
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('registerView').classList.remove('hidden');
+        }
+        
+        // Function to display flash messages
+        function showFlashMessage(message, container) {
+            const flashDiv = document.createElement('div');
+            flashDiv.className = 'flash-message';
+            flashDiv.textContent = message;
+            document.getElementById(container).appendChild(flashDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                flashDiv.remove();
+            }, 5000);
+        }
+
+        // Function to check URL parameters for errors
+        function checkUrlForErrors() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                showFlashMessage(urlParams.get('error'), 'flashMessages');
+            }
+            
+            // Check for role parameter to pre-select role
+            if (urlParams.has('role')) {
+                currentRole = urlParams.get('role');
+                showLogin(currentRole);
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            showRoleSelection();
+            checkUrlForErrors();
+            
+            // Check for hash in URL to determine view
+            if (window.location.hash === '#login') {
+                showLogin(currentRole || 'donor');
+            } else if (window.location.hash === '#register') {
+                currentRole = currentRole || 'donor';
+                showRegister();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Update Blood Bank Stock</h1>
+        <p>Update the stock for {{ blood_bank.name }}</p>
+    </div>
+
+    <div class="card">
+        <form method="POST" action="">
+            <input type="hidden" name="bank_id" value="{{ blood_bank.id }}">
+            <div class="form-group">
+                <label for="A+">A+</label>
+                <input type="number" id="A+" name="A+" value="{{ blood_bank.inventory.get('A+', 0) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="A-">A-</label>
+                <input type="number" id="A-" name="A-" value="{{ blood_bank.inventory.get('A-', 0) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="B+">B+</label>
+                <input type="number" id="B+" name="B+" value="{{ blood_bank.inventory.get('B+', 0) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="B-">B-</label>
+                <input type="number" id="B-" name="B-" value="{{ blood_bank.inventory.get('B-', 0) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="AB+">AB+</label>
+                <input type="number" id="AB+" name="AB+" value="{{ blood_bank.inventory.get('AB+', 0) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="AB-">AB-</label>
+                <input type="number" id="AB-" name="AB-" value="{{ blood_bank.inventory.get('AB-', 0) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="O+">O+</label>
+                <input type="number" id="O+" name="O+" value="{{ blood_bank.inventory.get('O+', 0) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="O-">O-</label>
+                <input type="number" id="O-" name="O-" value="{{ blood_bank.inventory.get('O-', 0) }}" required>
+            </div>
+            <button type="submit" class="btn">Update Stock</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Donor Dashboard</h1>
+        <p>Welcome back, {{ current_user.name }}</p>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2 class="card-title">Your Profile</h2>
+            <div class="detail-item">
+                <span class="detail-label">Blood Type</span>
+                <span class="detail-value">{{ current_user.blood_type }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Last Donation</span>
+                <span class="detail-value" id="last-donation">
+                    {% if current_user.last_donation %}
+                        {{ current_user.last_donation.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        No donations yet
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Donation History</h2>
+            {% if donations %}
+                <ul class="donation-list">
+                    {% for donation in donations %}
+                        <li class="donation-item">
+                            <div class="detail-item">
+                                <span class="detail-label">Units Donated</span>
+                                <span class="detail-value">{{ donation.units }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Recipient Email</span>
+                                <span class="detail-value">{{ donation.recipient.email }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Donation Date</span>
+                                <span class="detail-value">{{ donation.donation_date.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have no donation history yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="card" id="nearby-requests-card">
+            <h2 class="card-title">Nearby Requests</h2>
+            {% for request in requests %}
+                <div class="request-card" id="request-{{ request.id }}">
+                    <div class="request-header">
+                        <span class="request-type">{{ request.blood_type }}</span>
+                        <span class="request-status status-{{ request.status }}">{{ request.status }}</span>
+                    </div>
+                    <div class="request-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Units Needed</span>
+                            <span class="detail-value">{{ request.units_needed }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Urgency</span>
+                            <span class="detail-value">{{ request.urgency }}</span>
+                        </div>
+                    </div>
+                    {% if request.status == 'pending' %}
+                        <button class="btn btn-primary respond-btn" data-request-id="{{ request.id }}" data-date="{{ current_time.strftime('%Y-%m-%d') }}">Respond to Request</button>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p>No nearby requests at the moment.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.respond-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const requestId = this.getAttribute('data-request-id');
+            const today = new Date().toISOString().split('T')[0];
+
+            fetch(`/respond_to_request/${requestId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ requestId: requestId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the request card from the DOM
+                    const card = document.getElementById(`request-${requestId}`);
+                    if (card) {
+                        card.remove();
+                    }
+
+                    // Update last donation date instantly
+                    const lastDonation = document.getElementById('last-donation');
+                    if (lastDonation) {
+                        lastDonation.textContent = today;
+                    }
+
+                    alert('Request responded successfully!');
+                } else {
+                    alert('Failed to respond to request.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while responding to the request.');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

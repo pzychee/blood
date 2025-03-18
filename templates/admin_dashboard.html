@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Admin Dashboard</h1>
+        <p>Welcome back, {{ current_user.name }}</p>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2 class="card-title">Total Blood Stock</h2>
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Blood Type</th>
+                        <th>Total Units Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for blood_type, units in total_stock.items() %}
+                    <tr>
+                        <td>{{ blood_type }}</td>
+                        <td>{{ units }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Blood Banks</h2>
+            {% if blood_banks and blood_banks|length > 0 %}
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Blood Bank Name</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bank in blood_banks %}
+                    <tr>
+                        <td>{{ bank.name }}</td>
+                        <td>{{ bank.latitude }}</td>
+                        <td>{{ bank.longitude }}</td>
+                        <td>{{ bank.contact }}</td>
+                        <td>
+                            <a href="{{ url_for('update_bank_stock', bank_id=bank.id) }}">Update Stock</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No blood bank data available.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">All Blood Requests</h2>
+            {% if blood_requests %}
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Blood Type</th>
+                        <th>Units Needed</th>
+                        <th>Urgency</th>
+                        <th>Status</th>
+                        <th>Donor Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in blood_requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.blood_type }}</td>
+                        <td>{{ request.units_needed }}</td>
+                        <td>{{ request.urgency }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>{{ request.donor_email or 'N/A' }}</td>
+                        <td>
+                            {% if request.status == 'pending' %}
+                            <a href="{{ url_for('fulfill_request', request_id=request.id) }}">Fulfill Request</a>
+                            {% else %}
+                            <span class="status-good">Fulfilled</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No blood requests available.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">All Donations</h2>
+            {% if donations %}
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Donor Name</th>
+                        <th>Blood Type</th>
+                        <th>Units</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for donation in donations %}
+                    <tr>
+                        <td>{{ donation.donor.name }}</td>
+                        <td>{{ donation.blood_type }}</td>
+                        <td>{{ donation.units }}</td>
+                        <td>{{ donation.donation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No donations available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
