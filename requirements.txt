@@ -7,3 +7,4 @@ python-dotenv==1.0.0
 geopy==2.4.1
 Flask-Mail==0.9.1
 bcrypt==4.1.2
+flask_migrate
